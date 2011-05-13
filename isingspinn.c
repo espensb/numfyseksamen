@@ -13,8 +13,12 @@
 
 typedef short int sint;
 
+struct Hamilton {
+	int k;
+	int h;
+};
 
-struct lattice {
+struct Lattice {
 	sint size;
 	sint* grid;
 	sint* n;
@@ -32,23 +36,23 @@ struct lattice {
 };
 
 
-void allocLattice(struct lattice*, sint);
+void allocLattice(struct Lattice*, sint);
 
-void initLattice(struct lattice*, sint);
+void initLattice(struct Lattice*, sint);
 
-void printLattice(struct lattice*);
+void printLattice(struct Lattice*);
 
-void calcHamiltons(struct lattice* latt);
+void calcHamiltons(struct Lattice* latt);
 
-void localHamilton(struct lattice* latt, sint i);
+void localHamilton(struct Lattice* latt, sint i);
 
-void hamiltonContrib(struct lattice latt, sint i);
+void hamiltonContrib(struct Lattice latt, sint i);
 
 
 
 int main(void) {
 	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
-	struct lattice* latt = malloc(sizeof(struct lattice));
+	struct Lattice* latt = malloc(sizeof(struct Lattice));
 	allocLattice(latt,5);
 	initLattice(latt,1);
 	printLattice(latt);
@@ -57,7 +61,7 @@ int main(void) {
 	return EXIT_SUCCESS;
 }
 
-void allocLattice(struct lattice* latt, sint size) {
+void allocLattice(struct Lattice* latt, sint size) {
 	latt->size=size;
 	sint size2 = size*size;
 	latt->grid = malloc(sizeof(sint)*size2);
@@ -71,7 +75,7 @@ void allocLattice(struct lattice* latt, sint size) {
 	latt->signw = malloc(sizeof(sint)*size2);
 }
 
-void initLattice(struct lattice* latt, sint size) {
+void initLattice(struct Lattice* latt, sint size) {
 	latt->size=size;
 	sint* grid = latt->grid;
 	sint* n = latt->n;
@@ -118,7 +122,7 @@ void initLattice(struct lattice* latt, sint size) {
 	latt->wk = wk;
 }
 
-void printLattice(struct lattice* latt) {
+void printLattice(struct Lattice* latt) {
 	sint i;
 	sint size = latt->size;
 	sint size2 = size*size;
@@ -129,7 +133,7 @@ void printLattice(struct lattice* latt) {
 	}
 }
 
-void calcHamiltons(struct lattice* latt) {
+void calcHamiltons(struct Lattice* latt) {
 	int ham_k = 0;
 	int ham_t = 0;
 	int temp;
