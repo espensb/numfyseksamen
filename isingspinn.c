@@ -66,12 +66,12 @@ double getTau(struct Lattice* latt, double T, int itermax);
 int main(void) {
 	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
 	struct Lattice* latt = malloc(sizeof(struct Lattice));
-	allocLattice(latt,5);
-	initLattice(latt,1);
-	printLattice(latt);
+	allocLattice(latt,32);
+	initLattice(latt,32);
+	//printLattice(latt);
 	calcHamiltons(latt);
-	double tau = getTau(latt, 293, 10);
-	printf("\nHamilton: %i\n", tau);
+	double tau = getTau(latt, 293, 10000000);
+	printf("\nHamilton: %f\n", tau);
 	return EXIT_SUCCESS;
 }
 
@@ -236,6 +236,10 @@ double getTau(struct Lattice* latt, double T, int itermax) {
 			latt->grid[k] ^= 1;
 		}
 		sum += nextterm;
+		if (sum > 1) {
+			1;
+			//
+		}
 	}
 	return -(T/latt->size)*log(sum/i);
 }
