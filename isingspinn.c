@@ -10,8 +10,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 typedef short int sint;
+
+const int RMAX = RAND_MAX;
 
 struct Hamilton {
 	int k;
@@ -35,6 +38,9 @@ struct Lattice {
 	int ham_k;
 };
 
+int rnd() {
+	return rand();
+}
 
 void allocLattice(struct Lattice*, sint);
 
@@ -44,9 +50,16 @@ void printLattice(struct Lattice*);
 
 void calcHamiltons(struct Lattice* latt);
 
-void localHamilton(struct Lattice* latt, sint i);
+int localHamiltonK(struct Lattice* latt, sint k);
 
-void hamiltonContrib(struct Lattice latt, sint i);
+int hamiltonContribK(struct Lattice* latt, sint k);
+
+int localHamiltonT(struct Lattice* latt, sint k);
+
+int hamiltonContribT(struct Lattice* latt, sint k);
+
+//find Tau by Metropolis Monte Carlo method
+double getTau(struct Lattice* latt, double T, int itermax);
 
 
 
@@ -57,7 +70,8 @@ int main(void) {
 	initLattice(latt,1);
 	printLattice(latt);
 	calcHamiltons(latt);
-	printf("\nHamilton: %i\n", latt->ham_t);
+	double tau = getTau(latt, 293, 10);
+	printf("\nHamilton: %i\n", tau);
 	return EXIT_SUCCESS;
 }
 
@@ -92,7 +106,7 @@ void initLattice(struct Lattice* latt, sint size) {
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < size; j++) {
 			index = size*i + j;
-			grid[index] = rand()&1;
+			grid[index] = rnd()&1;
 			n[index] = size*(i-1)+j;
 			s[index] = size*(i+1)+j;
 			et[index] = size*i+j+1;
@@ -156,5 +170,72 @@ void calcHamiltons(struct Lattice* latt) {
 	latt->ham_t = -1*(ham_t >> 1);
 }
 
+int localHamiltonK(struct Lattice* latt, sint k) {
+	return
+			hamiltonContribK(latt,k)		   +
+			hamiltonContribK(latt,latt->n[k])  +
+			hamiltonContribK(latt,latt->s[k])  +
+			hamiltonContribK(latt,latt->ek[k]) +
+			hamiltonContribK(latt,latt->wk[k]);
+}
 
+int hamiltonContribK(struct Lattice* latt, sint k) {
+	return latt->grid[k]*(
+			latt->grid[latt->n[k]]					+
+			latt->grid[latt->s[k]]					+
+			latt->grid[latt->ek[k]]*latt->signe[k]	+
+			latt->grid[latt->wk[k]]*latt->signw[k]
+	);
+}
 
+int localHamiltonT(struct Lattice* latt, sint k) {
+	return
+			hamiltonContribT(latt,k)           +
+			hamiltonContribT(latt,latt->n[k])  +
+			hamiltonContribT(latt,latt->s[k])  +
+			hamiltonContribT(latt,latt->et[k]) +
+			hamiltonContribT(latt,latt->wt[k]);
+}
+
+int hamiltonContribT(struct Lattice* latt, sint k) {
+	return latt->grid[k]*(
+			latt->grid[latt->n[k]]  +
+			latt->grid[latt->s[k]]  +
+			latt->grid[latt->et[k]] +
+			latt->grid[latt->wt[k]]
+	);
+}
+
+double getTau(struct Lattice* latt, double T, int itermax) {
+	double sum = 0;
+	int i = 0;
+	//perturbe state
+	sint size2 = latt->size*latt->size;
+	sint k;
+	int ht_current;
+	int ht_trial;
+	int delta_ht;
+	int hk_current;
+	int hk_trial;
+	double nextterm = exp((latt->ham_t-latt->ham_k)/T); //switched sign
+	while (i++ < itermax) {
+		k = rnd()%size2;
+		ht_current = localHamiltonT(latt,k);
+		hk_current = localHamiltonK(latt,k);
+		latt->grid[k] ^= 1;
+		ht_trial = localHamiltonT(latt,k);
+		hk_trial = localHamiltonK(latt,k);
+		delta_ht = ht_trial - ht_current;
+		if (rnd()/RMAX <= exp(-delta_ht/T)) {
+			//keep
+			latt->ham_t += delta_ht;
+			latt->ham_k += hk_trial-hk_current;
+			nextterm = exp((latt->ham_t-latt->ham_k)/T); //switched sign
+		} else {
+			//rollback
+			latt->grid[k] ^= 1;
+		}
+		sum += nextterm;
+	}
+	return -(T/latt->size)*log(sum/i);
+}
