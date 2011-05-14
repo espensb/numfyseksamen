@@ -11,10 +11,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 typedef short int sint;
 
 const double RMAX = RAND_MAX;
+
+const int ITER = 1000000;
+const double T_min = 0.1;
+const double T_max = 4.5;
+const double T_steps = 500;
+
 
 struct Hamilton {
 	int k;
@@ -73,25 +80,21 @@ double getTau(struct Lattice* latt, double T, int itermax);
 
 
 
-int main(int argc, char **argv[]) {
+int main() {
+	double dT = (T_max-T_min)/T_steps;
 	struct Lattice* latt = malloc(sizeof(struct Lattice));
 	allocLattice(latt,32);
 
-	//latt->grid[0]^=1;
-	//printLattice(latt);
-
 	double T;
-	for (T = 0.1; T < 3; T += 0.1) {
-		int i;
+	double tau = 0;
+
+	for (T = T_min; T <= T_max; T += dT) {
 		fprintf(stderr,"T: %f\n",T);
-		double tau=0;
-		for (i = 0; i < 10; i++) {
-			initLattice(latt,8);
-			calcHamiltons(latt);
-			getTau(latt, T, 10000);
-			tau = getTau(latt, T, 10000);
-			printf("%f\t%e\n",T,tau);
-		}
+		initLattice(latt,32);
+		calcHamiltons(latt);
+		getTau(latt, T, ITER);
+		tau = getTau(latt, T, ITER);
+		printf("%f\t%e\n",T,tau);
 	}
 	return EXIT_SUCCESS;
 }
