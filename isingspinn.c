@@ -52,11 +52,11 @@ void calcHamiltons(struct Lattice* latt);
 
 void calcHamiltons2(struct Lattice* latt);
 
-int localHamiltonK(struct Lattice* latt, sint k);
+double localHamiltonK(struct Lattice* latt, sint k);
 
 int hamiltonContribK(struct Lattice* latt, sint k);
 
-int localHamiltonT(struct Lattice* latt, sint k);
+double localHamiltonT(struct Lattice* latt, sint k);
 
 int hamiltonContribT(struct Lattice* latt, sint k);
 
@@ -74,21 +74,25 @@ double getTau(struct Lattice* latt, double T, int itermax);
 
 
 int main(void) {
-	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
 	struct Lattice* latt = malloc(sizeof(struct Lattice));
 	allocLattice(latt,32);
-	initLattice(latt,20);
+
 	//latt->grid[0]^=1;
 	//printLattice(latt);
-	calcHamiltons(latt);
-	double tau = getTau(latt, 10, 1000000);
-	printf("\nHamilton: %f\n", tau);
-	printf("H_t: %i\t H_k: %i\n",latt->ham_t, latt->ham_k);
-	calcHamiltons(latt);
-	printf("H_t: %i\t H_k: %i\n",latt->ham_t, latt->ham_k);
-	calcHamiltons2(latt);
-	printf("H_t: %i\t H_k: %i\n",latt->ham_t, latt->ham_k);
 
+	double T;
+	for (T = 0.1; T < 3; T += 0.1) {
+		int i;
+		fprintf(stderr,"T: %f\n",T);
+		double tau=0;
+		for (i = 0; i < 10; i++) {
+			initLattice(latt,8);
+			calcHamiltons2(latt);
+			getTau(latt, T, 10000);
+			tau = getTau(latt, T, 10000);
+			printf("%f\t%e\n",T,tau);
+		}
+	}
 	return EXIT_SUCCESS;
 }
 
@@ -205,14 +209,14 @@ void calcHamiltons2(struct Lattice* latt) {
 }
 
 
-int localHamiltonK(struct Lattice* latt, sint k) {
+double localHamiltonK(struct Lattice* latt, sint k) {
 	return (
 			hamiltonContribK(latt,k)          +
 			hamiltonContribK(latt,latt->n[k])  +
 			hamiltonContribK(latt,latt->s[k])  +
 			hamiltonContribK(latt,latt->ek[k]) +
 			hamiltonContribK(latt,latt->wk[k])
-			)/-2;
+			)*-0.5;
 }
 
 int hamiltonContribK(struct Lattice* latt, sint k) {
@@ -223,14 +227,14 @@ int hamiltonContribK(struct Lattice* latt, sint k) {
 	return res;
 }
 
-int localHamiltonT(struct Lattice* latt, sint k) {
+double localHamiltonT(struct Lattice* latt, sint k) {
 	return (
 			hamiltonContribT(latt,k)          +
 			hamiltonContribT(latt,latt->n[k])  +
 			hamiltonContribT(latt,latt->s[k])  +
 			hamiltonContribT(latt,latt->et[k]) +
 			hamiltonContribT(latt,latt->wt[k])
-			)/-2;
+			)*-0.5;
 }
 
 int hamiltonContribT(struct Lattice* latt, sint k) {
@@ -244,7 +248,6 @@ int hamiltonContribT(struct Lattice* latt, sint k) {
 double getTau(struct Lattice* latt, double T, int itermax) {
 	double sum = 0;
 	int i = 0;
-	//perturbe state
 	sint size2 = latt->size*latt->size;
 	sint k;
 	int ht_current;
@@ -262,8 +265,8 @@ double getTau(struct Lattice* latt, double T, int itermax) {
 		hk_trial = localHamiltonK(latt,k);
 		delta_ht = ht_trial - ht_current;
 		double p = rnd()/RMAX;
-		//printf("p: %f\n",p);
-		//printf("R: %f\n",R(delta_ht,T));
+		//printf("p: %e\n",p);
+		//printf("R: %e\n",R(delta_ht,T));
 		if (p <= R(delta_ht,T)) {
 			//puts("kept");
 			latt->ham_t += delta_ht;
@@ -276,6 +279,7 @@ double getTau(struct Lattice* latt, double T, int itermax) {
 		}
 		sum += nextterm;
 	}
+
 	//return -(T/latt->size)*log(sum/i);
-	return sum/i;
+	return (-T/latt->size)*log(sum/i);
 }
