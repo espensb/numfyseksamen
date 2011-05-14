@@ -22,6 +22,10 @@ const double T_min = 0.1;
 const double T_max = 4.5;
 const double T_steps = 500;
 
+const double N_min = 2;
+const double N_max = 10;
+const double N_steps = 1;
+
 
 struct Hamilton {
 	int k;
@@ -83,18 +87,23 @@ double getTau(struct Lattice* latt, double T, int itermax);
 int main() {
 	double dT = (T_max-T_min)/T_steps;
 	struct Lattice* latt = malloc(sizeof(struct Lattice));
-	allocLattice(latt,32);
+	allocLattice(latt,N_max);
 
-	double T;
+	double T = 2/log(1+sqrt(2));
 	double tau = 0;
-
-	for (T = T_min; T <= T_max; T += dT) {
-		fprintf(stderr,"T: %f\n",T);
-		initLattice(latt,32);
+	int N;
+	int i;
+	for (i = 0; i < 10; i++) {
+	for (N = N_min; N <= N_max; N+=N_steps) {
+		//fprintf(stderr,"T: %f\n",T);
+		fprintf(stderr,"N: %i\n",N);
+		initLattice(latt,N);
 		calcHamiltons(latt);
-		getTau(latt, T, ITER);
-		tau = getTau(latt, T, ITER);
-		printf("%f\t%e\n",T,tau);
+		getTau(latt, T, (int) ITER*exp(0.008*N*N));
+		tau = getTau(latt, T, (int) ITER*exp(0.008*N*N));
+		printf("%i\t%e\n",N,tau);
+		//printf("%f\t%e\n",T,tau);
+	}
 	}
 	return EXIT_SUCCESS;
 }
@@ -169,6 +178,7 @@ void printLattice(struct Lattice* latt) {
 		if (i%size==0) printf("\n");
 		printf("%i\t", arr[i]);
 	}
+	printf("\n");
 }
 
 void calcHamiltons(struct Lattice* latt) {
@@ -195,21 +205,7 @@ double localHamiltonK(struct Lattice* latt, sint k) {
 	+ (1-2*(latt->grid[latt->wk[k]]^latt->grid[k]))*latt->signw[k];
 }
 
-int hamiltonContribK(struct Lattice* latt, sint k) {
-	return 2 - 2*((latt->grid[latt->n[k]]^latt->grid[k])
-	+ (latt->grid[latt->s[k]]^latt->grid[k]))
-	+ (1-2*(latt->grid[latt->ek[k]]^latt->grid[k]))*latt->signe[k]
-	+ (1-2*(latt->grid[latt->wk[k]]^latt->grid[k]))*latt->signw[k];
-}
-
 double localHamiltonT(struct Lattice* latt, sint k) {
-	return 4 - 2*((latt->grid[latt->n[k]]^latt->grid[k])
-	 + (latt->grid[latt->s[k]]^latt->grid[k])
-	 + (latt->grid[latt->et[k]]^latt->grid[k])
-	 + (latt->grid[latt->wt[k]]^latt->grid[k]));
-}
-
-int hamiltonContribT(struct Lattice* latt, sint k) {
 	return 4 - 2*((latt->grid[latt->n[k]]^latt->grid[k])
 	 + (latt->grid[latt->s[k]]^latt->grid[k])
 	 + (latt->grid[latt->et[k]]^latt->grid[k])

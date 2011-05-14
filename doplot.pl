@@ -9,3 +9,4 @@ $time = time - $time;
 print "Done in $time sec\n"; 
 `gnuplot doplot.gnu`;
 `open plot.png`;
+`say omg! finished!`
