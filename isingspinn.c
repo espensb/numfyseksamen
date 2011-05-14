@@ -23,7 +23,7 @@ struct Hamilton {
 
 struct Lattice {
 	sint size;
-	sint* grid;
+	char* grid;
 	sint* n;
 	sint* s;
 	sint* et;
@@ -73,7 +73,7 @@ double getTau(struct Lattice* latt, double T, int itermax);
 
 
 
-int main(void) {
+int main(int argc, char **argv[]) {
 	struct Lattice* latt = malloc(sizeof(struct Lattice));
 	allocLattice(latt,32);
 
@@ -99,7 +99,7 @@ int main(void) {
 void allocLattice(struct Lattice* latt, sint size) {
 	latt->size=size;
 	sint size2 = size*size;
-	latt->grid = malloc(sizeof(sint)*size2);
+	latt->grid = malloc(sizeof(char)*size2);
 	latt->n = malloc(sizeof(sint)*size2);
 	latt->s = malloc(sizeof(sint)*size2);
 	latt->et = malloc(sizeof(sint)*size2);
@@ -112,7 +112,7 @@ void allocLattice(struct Lattice* latt, sint size) {
 
 void initLattice(struct Lattice* latt, sint size) {
 	latt->size=size;
-	sint* grid = latt->grid;
+	char* grid = latt->grid;
 	sint* n = latt->n;
 	sint* s = latt->s;
 	sint* et = latt->et;
@@ -161,7 +161,7 @@ void printLattice(struct Lattice* latt) {
 	sint i;
 	sint size = latt->size;
 	sint size2 = size*size;
-	sint* arr = latt->grid;
+	char* arr = latt->grid;
 	for (i = 0; i < size2; i++) {
 		if (i%size==0) printf("\n");
 		printf("%i\t", arr[i]);
@@ -184,7 +184,6 @@ void calcHamiltons(struct Lattice* latt) {
 	latt->ham_k = -1*(ham_k);
 	latt->ham_t = -1*(ham_t);
 }
-
 
 double localHamiltonK(struct Lattice* latt, sint k) {
 	return 2 - 2*((latt->grid[latt->n[k]]^latt->grid[k])
@@ -234,21 +233,14 @@ double getTau(struct Lattice* latt, double T, int itermax) {
 		ht_trial = -1*localHamiltonT(latt,k);
 		hk_trial = -1*localHamiltonK(latt,k);
 		delta_ht = ht_trial - ht_current;
-		//printf("p: %e\n",p);
-		//printf("R: %e\n",R(delta_ht,T));
 		if (rnd()/RMAX <= R(delta_ht,T)) {
-			//puts("keep");
 			latt->ham_t += delta_ht;
 			latt->ham_k += hk_trial-hk_current;
 			nextterm = exp((latt->ham_t-latt->ham_k)/T); //switched sign
 		} else {
-			//rollback
-			//puts("rollback");
 			latt->grid[k] ^= 1;
 		}
 		sum += nextterm;
 	}
-
-	//return -(T/latt->size)*log(sum/i);
 	return (-T/latt->size)*log(sum/i);
 }
