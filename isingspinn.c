@@ -1,10 +1,8 @@
 /*
  ============================================================================
  Name        : isingspinn.c
- Author      : 
- Version     :
- Copyright   : Your copyright notice
- Description : Hello World in C, Ansi-style
+ Author      : Espen Stene Broenstad 
+ Description : Program for final exam in Computational Physics
  ============================================================================
  */
 
