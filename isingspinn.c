@@ -14,7 +14,7 @@
 
 typedef short int sint;
 
-const int RMAX = RAND_MAX;
+const double RMAX = RAND_MAX;
 
 struct Hamilton {
 	int k;
@@ -50,6 +50,8 @@ void printLattice(struct Lattice*);
 
 void calcHamiltons(struct Lattice* latt);
 
+void calcHamiltons2(struct Lattice* latt);
+
 int localHamiltonK(struct Lattice* latt, sint k);
 
 int hamiltonContribK(struct Lattice* latt, sint k);
@@ -57,6 +59,14 @@ int hamiltonContribK(struct Lattice* latt, sint k);
 int localHamiltonT(struct Lattice* latt, sint k);
 
 int hamiltonContribT(struct Lattice* latt, sint k);
+
+double R(int delta_h,double T) {
+	if (delta_h>0) {
+		return exp(-delta_h/T);
+	}
+	else return 1;
+}
+
 
 //find Tau by Metropolis Monte Carlo method
 double getTau(struct Lattice* latt, double T, int itermax);
@@ -67,11 +77,18 @@ int main(void) {
 	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
 	struct Lattice* latt = malloc(sizeof(struct Lattice));
 	allocLattice(latt,32);
-	initLattice(latt,32);
+	initLattice(latt,20);
+	//latt->grid[0]^=1;
 	//printLattice(latt);
 	calcHamiltons(latt);
-	double tau = getTau(latt, 293, 10000000);
+	double tau = getTau(latt, 10, 1000000);
 	printf("\nHamilton: %f\n", tau);
+	printf("H_t: %i\t H_k: %i\n",latt->ham_t, latt->ham_k);
+	calcHamiltons(latt);
+	printf("H_t: %i\t H_k: %i\n",latt->ham_t, latt->ham_k);
+	calcHamiltons2(latt);
+	printf("H_t: %i\t H_k: %i\n",latt->ham_t, latt->ham_k);
+
 	return EXIT_SUCCESS;
 }
 
@@ -154,56 +171,74 @@ void calcHamiltons(struct Lattice* latt) {
 	sint i = 0;
 	sint size2 = latt->size*latt->size;
 	for (i = 0; i < size2; i++) {
-		temp = latt->grid[latt->n[i]] + latt->grid[latt->s[i]];
-		ham_k += (
-					temp +
-					latt->grid[latt->ek[i]]*latt->signe[i] +
-					latt->grid[latt->wk[i]]*latt->signw[i]
-				) * latt->grid[i];
-		ham_t += (
-					temp +
-					latt->grid[latt->et[i]] +
-					latt->grid[latt->wt[i]]
-				) * latt->grid[i];
+		ham_k += 1-2*(latt->grid[latt->n[i]]^latt->grid[i]);
+		ham_k += 1-2*(latt->grid[latt->s[i]]^latt->grid[i]);
+		ham_k += (1-2*(latt->grid[latt->ek[i]]^latt->grid[i]))*latt->signe[i];
+		ham_k += (1-2*(latt->grid[latt->wk[i]]^latt->grid[i]))*latt->signw[i];
+
+		ham_t += 1-2*(latt->grid[latt->n[i]]^latt->grid[i]);
+		ham_t += 1-2*(latt->grid[latt->s[i]]^latt->grid[i]);
+		ham_t += 1-2*(latt->grid[latt->et[i]]^latt->grid[i]);
+		ham_t += 1-2*(latt->grid[latt->wt[i]]^latt->grid[i]);
 	}
-	latt->ham_k = -1*(ham_k >> 1);
-	latt->ham_t = -1*(ham_t >> 1);
+	if (ham_k&1) puts("dsfsdgf K");
+		if (ham_t&1) puts("dsafasf T");
+	latt->ham_k = -1*(ham_k/2);
+	latt->ham_t = -1*(ham_t/2);
 }
 
+void calcHamiltons2(struct Lattice* latt) {
+	int ham_k = 0;
+	int ham_t = 0;
+	int temp;
+	sint i = 0;
+	sint size2 = latt->size*latt->size;
+	for (i = 0; i < size2; i++) {
+		temp = latt->grid[latt->n[i]] + latt->grid[latt->s[i]];
+		ham_k += hamiltonContribK(latt,i);
+		ham_t += hamiltonContribT(latt,i);
+	}
+	if (ham_k&1) puts("dsfsdgf K");
+	if (ham_t&1) puts("dsafasf T");
+	latt->ham_k = -1*(ham_k/2);
+	latt->ham_t = -1*(ham_t/2);
+}
+
+
 int localHamiltonK(struct Lattice* latt, sint k) {
-	return
-			hamiltonContribK(latt,k)		   +
+	return (
+			hamiltonContribK(latt,k)          +
 			hamiltonContribK(latt,latt->n[k])  +
 			hamiltonContribK(latt,latt->s[k])  +
 			hamiltonContribK(latt,latt->ek[k]) +
-			hamiltonContribK(latt,latt->wk[k]);
+			hamiltonContribK(latt,latt->wk[k])
+			)/-2;
 }
 
 int hamiltonContribK(struct Lattice* latt, sint k) {
-	return latt->grid[k]*(
-			latt->grid[latt->n[k]]					+
-			latt->grid[latt->s[k]]					+
-			latt->grid[latt->ek[k]]*latt->signe[k]	+
-			latt->grid[latt->wk[k]]*latt->signw[k]
-	);
+	int res = 1 - 2*(latt->grid[latt->n[k]]^latt->grid[k]);
+	res += 1 - 2*(latt->grid[latt->s[k]]^latt->grid[k]);
+	res += (1 - 2*(latt->grid[latt->ek[k]]^latt->grid[k]))*latt->signe[k];
+	res += (1 - 2*(latt->grid[latt->wk[k]]^latt->grid[k]))*latt->signw[k];
+	return res;
 }
 
 int localHamiltonT(struct Lattice* latt, sint k) {
-	return
-			hamiltonContribT(latt,k)           +
+	return (
+			hamiltonContribT(latt,k)          +
 			hamiltonContribT(latt,latt->n[k])  +
 			hamiltonContribT(latt,latt->s[k])  +
 			hamiltonContribT(latt,latt->et[k]) +
-			hamiltonContribT(latt,latt->wt[k]);
+			hamiltonContribT(latt,latt->wt[k])
+			)/-2;
 }
 
 int hamiltonContribT(struct Lattice* latt, sint k) {
-	return latt->grid[k]*(
-			latt->grid[latt->n[k]]  +
-			latt->grid[latt->s[k]]  +
-			latt->grid[latt->et[k]] +
-			latt->grid[latt->wt[k]]
-	);
+	int res = 1 - 2*(latt->grid[latt->n[k]]^latt->grid[k]);
+	res += 1 - 2*(latt->grid[latt->s[k]]^latt->grid[k]);
+	res += 1 - 2*(latt->grid[latt->et[k]]^latt->grid[k]);
+	res += 1 - 2*(latt->grid[latt->wt[k]]^latt->grid[k]);
+	return res;
 }
 
 double getTau(struct Lattice* latt, double T, int itermax) {
@@ -226,20 +261,21 @@ double getTau(struct Lattice* latt, double T, int itermax) {
 		ht_trial = localHamiltonT(latt,k);
 		hk_trial = localHamiltonK(latt,k);
 		delta_ht = ht_trial - ht_current;
-		if (rnd()/RMAX <= exp(-delta_ht/T)) {
-			//keep
+		double p = rnd()/RMAX;
+		//printf("p: %f\n",p);
+		//printf("R: %f\n",R(delta_ht,T));
+		if (p <= R(delta_ht,T)) {
+			//puts("kept");
 			latt->ham_t += delta_ht;
 			latt->ham_k += hk_trial-hk_current;
 			nextterm = exp((latt->ham_t-latt->ham_k)/T); //switched sign
 		} else {
 			//rollback
+			//puts("rollback");
 			latt->grid[k] ^= 1;
 		}
 		sum += nextterm;
-		if (sum > 1) {
-			1;
-			//
-		}
 	}
-	return -(T/latt->size)*log(sum/i);
+	//return -(T/latt->size)*log(sum/i);
+	return sum/i;
 }
