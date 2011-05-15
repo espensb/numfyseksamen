@@ -13,7 +13,7 @@ let time=`date +%s`-$time
 echo "#Done in $time sec" >> adata.dat
 echo "Done in $time sec" 
 time=`date +%s`
-#./isingspinn.o b > bdata.dat
+./isingspinn.o b > bdata.dat
 let time=`date +%s`-$time
 echo "#Done in $time sec" >> bdata.dat
 echo "Done in $time sec" 

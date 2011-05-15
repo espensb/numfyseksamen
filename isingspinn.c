@@ -150,8 +150,8 @@ int main(int argc, char** args) {
 			int j;
 			for (j = 0; j < 20; j++) {
 				randomizeLattice(latt);
-				getTau(latt, T_c, (int) ITER*exp(0.008*N*N));
-				tau = getTau(latt, T_c, (int) ITER*exp(0.008*N*N));
+				getTau(latt, T_c, ITER);
+				tau = getTau(latt, T_c, ITER);
 				printf("%i\t%e\n",N,tau);
 				//printf("%f\t%e\n",T,tau);
 			}
@@ -301,7 +301,7 @@ double getTau(struct Lattice* latt, double T, int itermax) {
 		ht_trial = -1*localHamiltonT(latt,k);
 		hk_trial = -1*localHamiltonK(latt,k);
 		delta_ht = ht_trial - ht_current;
-		if (rnddoub()/RMAX <= R(delta_ht,T)) {
+		if (rnddoub() <= R(delta_ht,T)) {
 			latt->ham_t += delta_ht;
 			latt->ham_k += hk_trial-hk_current;
 			nextterm = exp((latt->ham_t-latt->ham_k)/T); //switched sign
