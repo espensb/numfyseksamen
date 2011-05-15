@@ -98,12 +98,14 @@ int main(int argc, char** args) {
 	int N;
 	int i = 0;
 	double tau;
+	argc =2;
 	struct Lattice* latt = malloc(sizeof(struct Lattice));
-	allocLattice(latt,N_max);
+	allocLattice(latt,32);
 	if (argc > 1) {
-		switch(args[1][0]) {
+		switch('a') {
 		case 'a':
 			for (N = 32; N <= 32; N++) {
+				initLattice(latt, 32);
 				printf("#N = %i\n",N);
 				fprintf(stderr,"N: %i\n",N);
 				for (T=T_min;T<T_max; T+=dT) {
@@ -117,6 +119,7 @@ int main(int argc, char** args) {
 			}
 			break;
 		case 'b':
+
 			break;
 		}
 	}
@@ -205,6 +208,7 @@ void initLattice(struct Lattice* latt, sint size) {
 	latt->wt = wt;
 	latt->ek = ek;
 	latt->wk = wk;
+	calcHamiltons(latt);
 }
 
 void randomizeLattice(struct Lattice* latt) {
@@ -212,6 +216,7 @@ void randomizeLattice(struct Lattice* latt) {
 	for (i = 0; i < latt->size2; i++) {
 		latt->grid[i] = rnd()&1;
 	}
+	calcHamiltons(latt);
 }
 
 void printLattice(struct Lattice* latt) {
