@@ -14,15 +14,16 @@
 typedef short int sint;
 
 const double RMAX = RAND_MAX;
-
+/*
 const int ITER = 1000000;
 const double T_min = 0.1;
 const double T_max = 4.5;
 const double T_steps = 500;
+*/
 
 const double N_min = 2;
-const double N_max = 10;
-const double N_steps = 1;
+const double N_max = 32;
+
 
 
 struct Hamilton {
@@ -32,6 +33,7 @@ struct Hamilton {
 
 struct Lattice {
 	sint size;
+	sint size2;
 	char* grid;
 	sint* n;
 	sint* s;
@@ -48,12 +50,15 @@ struct Lattice {
 };
 
 int rnd() {
+	//Implement your own random function if you want
 	return rand();
 }
 
 void allocLattice(struct Lattice*, sint);
 
 void initLattice(struct Lattice*, sint);
+
+void randomizeLattice(struct Lattice* latt);
 
 void printLattice(struct Lattice*);
 
@@ -82,8 +87,41 @@ double getTau(struct Lattice* latt, double T, int itermax);
 
 
 
-int main() {
+int main(int argc, char** args) {
+	double T_c = 2/log(1+sqrt(2));
+	int ITER = 1000000;
+	double T_min = 0.1;
+	double T_max = 4.5;
+	double T_steps = 500;
 	double dT = (T_max-T_min)/T_steps;
+	double T;
+	int N;
+	int i = 0;
+	double tau;
+	struct Lattice* latt = malloc(sizeof(struct Lattice));
+	allocLattice(latt,N_max);
+	if (argc > 1) {
+		switch(args[1][0]) {
+		case 'a':
+			for (N = 32; N <= 32; N++) {
+				printf("#N = %i\n",N);
+				fprintf(stderr,"N: %i\n",N);
+				for (T=T_min;T<T_max; T+=dT) {
+					fprintf(stderr,"T: %e %i\n",T,i++);
+					randomizeLattice(latt);
+					getTau(latt,T,ITER);
+					tau = getTau(latt,T,ITER);
+					printf("%e %e\n",T/T_c,tau);
+				}
+				printf("\n");
+			}
+			break;
+		case 'b':
+			break;
+		}
+	}
+
+	/*double dT = (T_max-T_min)/T_steps;
 	struct Lattice* latt = malloc(sizeof(struct Lattice));
 	allocLattice(latt,N_max);
 
@@ -102,13 +140,14 @@ int main() {
 		printf("%i\t%e\n",N,tau);
 		//printf("%f\t%e\n",T,tau);
 	}
-	}
+	}*/
 	return EXIT_SUCCESS;
 }
 
 void allocLattice(struct Lattice* latt, sint size) {
 	latt->size=size;
 	sint size2 = size*size;
+	latt->size2 = size2;
 	latt->grid = malloc(sizeof(char)*size2);
 	latt->n = malloc(sizeof(sint)*size2);
 	latt->s = malloc(sizeof(sint)*size2);
@@ -122,6 +161,7 @@ void allocLattice(struct Lattice* latt, sint size) {
 
 void initLattice(struct Lattice* latt, sint size) {
 	latt->size=size;
+	latt->size2=size*size;
 	char* grid = latt->grid;
 	sint* n = latt->n;
 	sint* s = latt->s;
@@ -165,6 +205,13 @@ void initLattice(struct Lattice* latt, sint size) {
 	latt->wt = wt;
 	latt->ek = ek;
 	latt->wk = wk;
+}
+
+void randomizeLattice(struct Lattice* latt) {
+	int i;
+	for (i = 0; i < latt->size2; i++) {
+		latt->grid[i] = rnd()&1;
+	}
 }
 
 void printLattice(struct Lattice* latt) {
