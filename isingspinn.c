@@ -88,6 +88,7 @@ double getTau(struct Lattice* latt, double T, int itermax);
 
 
 int main(int argc, char** args) {
+	if (argc <= 1) return 1;
 	double T_c = 2/log(1+sqrt(2));
 	int ITER = 1000000;
 	double T_min = 0.1;
@@ -98,52 +99,43 @@ int main(int argc, char** args) {
 	int N;
 	int i = 0;
 	double tau;
+	int Ns[] = { 4,5,6,9,11,15,20, 26, 32};
 	argc =2;
 	struct Lattice* latt = malloc(sizeof(struct Lattice));
 	allocLattice(latt,32);
-	if (argc > 1) {
-		switch('a') {
-		case 'a':
-			for (N = 32; N <= 32; N++) {
-				initLattice(latt, 32);
-				printf("#N = %i\n",N);
-				fprintf(stderr,"N: %i\n",N);
-				for (T=T_min;T<T_max; T+=dT) {
-					fprintf(stderr,"T: %e %i\n",T,i++);
-					randomizeLattice(latt);
-					getTau(latt,T,ITER);
-					tau = getTau(latt,T,ITER);
-					printf("%e %e\n",T/T_c,tau);
-				}
-				printf("\n");
+	switch(args[1][0]) {
+	case 'a':
+		for (i = 0, N=Ns[i];  N!=0; N = Ns[++i]) {
+			initLattice(latt, N);
+			printf("N = %i\n",N);
+			fprintf(stderr,"N: %i\n",N);
+			int j = 0;
+			for (T=T_min;T<T_max; T+=dT) {
+				fprintf(stderr,"T: %e %i N: %i\n",T,j++,N);
+				randomizeLattice(latt);
+				getTau(latt,T,1e6);
+				tau = getTau(latt,T,1e6);
+				printf("%e\t%e\n",T,tau);
 			}
-			break;
-		case 'b':
-
-			break;
+			printf("\n");
 		}
+		break;
+	case 'b':
+		for (i = 0, N=Ns[i]; N<=20; N=Ns[++i]) {
+			//fprintf(stderr,"T: %f\n",T);
+			fprintf(stderr,"N: %i\n",N);
+			initLattice(latt,N);
+			int j;
+			for (j = 0; j < 20; j++) {
+				randomizeLattice(latt);
+				getTau(latt, T_c, (int) ITER*exp(0.008*N*N));
+				tau = getTau(latt, T_c, (int) ITER*exp(0.008*N*N));
+				printf("%i\t%e\n",N,tau);
+				//printf("%f\t%e\n",T,tau);
+			}
+		}
+		break;
 	}
-
-	/*double dT = (T_max-T_min)/T_steps;
-	struct Lattice* latt = malloc(sizeof(struct Lattice));
-	allocLattice(latt,N_max);
-
-	double T = 2/log(1+sqrt(2));
-	double tau = 0;
-	int N;
-	int i;
-	for (i = 0; i < 10; i++) {
-	for (N = N_min; N <= N_max; N+=N_steps) {
-		//fprintf(stderr,"T: %f\n",T);
-		fprintf(stderr,"N: %i\n",N);
-		initLattice(latt,N);
-		calcHamiltons(latt);
-		getTau(latt, T, (int) ITER*exp(0.008*N*N));
-		tau = getTau(latt, T, (int) ITER*exp(0.008*N*N));
-		printf("%i\t%e\n",N,tau);
-		//printf("%f\t%e\n",T,tau);
-	}
-	}*/
 	return EXIT_SUCCESS;
 }
 
