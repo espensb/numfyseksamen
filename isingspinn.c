@@ -90,7 +90,7 @@ double getTau(struct Lattice* latt, double T, int itermax);
 int main(int argc, char** args) {
 	if (argc <= 1) return 1;
 	double T_c = 2/log(1+sqrt(2));
-	int ITER = 1000000;
+	int ITER = 1e7;
 	double T_min = 0.1;
 	double T_max = 4.5;
 	double T_steps = 500;
@@ -113,8 +113,8 @@ int main(int argc, char** args) {
 			for (T=T_min;T<T_max; T+=dT) {
 				fprintf(stderr,"T: %e %i N: %i\n",T,j++,N);
 				randomizeLattice(latt);
-				getTau(latt,T,1e6);
-				tau = getTau(latt,T,1e6);
+				getTau(latt,T,ITER);
+				tau = getTau(latt,T,ITER);
 				printf("%e\t%e\n",T,tau);
 			}
 			printf("\n");
