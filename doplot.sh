@@ -1,11 +1,12 @@
 #!/bin/bash
 cd `dirname $0`
+gcc=gcc
 if command -v icc 
 then
-	alias gcc=icc
+	gcc=icc
 fi
-gcc
-gcc isingspinn.c -o isingspinn.o
+$gcc
+$gcc isingspinn.c -o isingspinn.o
 time=`date +%s`
 ./isingspinn.o a > data.dat
 let time=`date +%s`-$time
