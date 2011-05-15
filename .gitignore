@@ -1,4 +1,6 @@
 *.png
 *.o
 data/
-*.dat
+*.dat*
+*.tgz
+*.tar*

@@ -70,6 +70,10 @@ void seedrnd(ullong j) {
 	rndw = rndv; rnd();
 }
 
+double rnddoub() {
+	return 5.4210108624752217E-20 * rnd();
+}
+
 
 void allocLattice(struct Lattice*, sint);
 
@@ -106,7 +110,7 @@ double getTau(struct Lattice* latt, double T, int itermax);
 
 int main(int argc, char** args) {
 	if (argc <= 1) return 1;
-	seedrand(time(0));
+	seedrnd(time(0));
 	double T_c = 2/log(1+sqrt(2));
 	int ITER = 1e7;
 	double T_min = 0.1;
@@ -153,6 +157,11 @@ int main(int argc, char** args) {
 			}
 		}
 		break;
+	case 'c':
+		for (i=0; i< 1000; i++) {
+			unsigned int r = rand();
+			printf("%e\n", rnddoub());
+		}
 	}
 	return EXIT_SUCCESS;
 }
@@ -292,7 +301,7 @@ double getTau(struct Lattice* latt, double T, int itermax) {
 		ht_trial = -1*localHamiltonT(latt,k);
 		hk_trial = -1*localHamiltonK(latt,k);
 		delta_ht = ht_trial - ht_current;
-		if (rnd()/RMAX <= R(delta_ht,T)) {
+		if (rnddoub()/RMAX <= R(delta_ht,T)) {
 			latt->ham_t += delta_ht;
 			latt->ham_k += hk_trial-hk_current;
 			nextterm = exp((latt->ham_t-latt->ham_k)/T); //switched sign
