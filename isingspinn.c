@@ -49,10 +49,27 @@ struct Lattice {
 	int ham_k;
 };
 
-int rnd() {
-	//Implement your own random function if you want
-	return rand();
+typedef unsigned long long int ullong;
+
+ullong seed = 1241;
+ullong rndv = 4101842887655102017LL;
+ullong rndu;
+ullong rndw = 1;
+
+
+unsigned int rnd() {
+	rndu = rndu*2862933555777941757LL + 7046029254386353087LL;
+	rndv ^= rndv >> 17; rndv ^= rndv << 31; rndv ^= rndv >> 8;
+	rndw = 4294957665U*(rndw & 0xffffffff) + (rndw >> 32);
+	ullong x = rndu ^ (rndu << 21);  x ^=  x >> 35; x ^= x << 4;
+	return abs((unsigned int) (x+rndv) ^ rndv);
 }
+void seedrnd(ullong j) {
+	rndu = j^rndv; rnd();
+	rndv = rndu; rnd();
+	rndw = rndv; rnd();
+}
+
 
 void allocLattice(struct Lattice*, sint);
 
@@ -89,6 +106,7 @@ double getTau(struct Lattice* latt, double T, int itermax);
 
 int main(int argc, char** args) {
 	if (argc <= 1) return 1;
+	seedrand(time(0));
 	double T_c = 2/log(1+sqrt(2));
 	int ITER = 1e7;
 	double T_min = 0.1;
@@ -99,7 +117,7 @@ int main(int argc, char** args) {
 	int N;
 	int i = 0;
 	double tau;
-	int Ns[] = { 4,5,6,9,11,15,20, 26, 32};
+	int Ns[] = { 4,5,6,9,11,15,20, 26, 32, 0};
 	argc =2;
 	struct Lattice* latt = malloc(sizeof(struct Lattice));
 	allocLattice(latt,32);
