@@ -107,7 +107,7 @@ int main(int argc, char** args) {
 	case 'a':
 		for (i = 0, N=Ns[i];  N!=0; N = Ns[++i]) {
 			initLattice(latt, N);
-			printf("N = %i\n",N);
+			printf("#N = %i\n",N);
 			fprintf(stderr,"N: %i\n",N);
 			int j = 0;
 			for (T=T_min;T<T_max; T+=dT) {
