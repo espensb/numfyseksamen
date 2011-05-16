@@ -119,6 +119,7 @@ int main(int argc, char** args) {
 	double dT = (T_max-T_min)/T_steps;
 	double T;
 	int N;
+	double t;
 	int i = 0;
 	double tau;
 	int Ns[] = { 4,5,6,9,11,15,20, 26, 32, 0};
