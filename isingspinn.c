@@ -158,10 +158,17 @@ int main(int argc, char** args) {
 		}
 		break;
 	case 'c':
-		for (i=0; i< 1000; i++) {
-			unsigned int r = rand();
-			printf("%e\n", rnddoub());
-		}
+		for (N = 2; N < 10; N+=1) {
+			initLattice(latt,N);
+			for (T = 0.1; T < 1; T +=0.1) {
+				fprintf(stderr,"N: %i T:%e\n",N,T);
+				randomizeLattice(latt);
+				getTau(latt, T, ITER);
+				tau = getTau(latt, T, ITER);
+				t = (T_c-T)/T_c;
+				printf("%e\t%e\t%i\n", tau/t, 1/(N*t), N); 
+			}   
+		}   
 	}
 	return EXIT_SUCCESS;
 }
