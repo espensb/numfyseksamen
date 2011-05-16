@@ -2,7 +2,7 @@
 *.out
 *.png
 *.o
-data/
+data*/
 *.dat*
 *.tgz
 *.tar*

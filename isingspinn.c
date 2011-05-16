@@ -112,7 +112,8 @@ int main(int argc, char** args) {
 	if (argc <= 1) return 1;
 	seedrnd(time(0));
 	double T_c = 2/log(1+sqrt(2));
-	int ITER = 1e7;
+	int ITER = 2e7;
+	int BURNIN = 1e6;
 	double T_min = 0.1;
 	double T_max = 4.5;
 	double T_steps = 500;
@@ -144,7 +145,7 @@ int main(int argc, char** args) {
 		}
 		break;
 	case 'b':
-		for (i = 0, N=Ns[i]; N<=20; N=Ns[++i]) {
+		for (N = 2; N < 10; N++) {
 			//fprintf(stderr,"T: %f\n",T);
 			fprintf(stderr,"N: %i\n",N);
 			initLattice(latt,N);
@@ -162,12 +163,12 @@ int main(int argc, char** args) {
 		for (N = 2; N < 10; N++) {
 			initLattice(latt,N);
 			printf("#N = %i\n",N);
-			for (T = 0.01; T < 0.16; T +=0.02) {
+			for (t = 0.01; t <= 0.1; t += 0.09) {
+				T = T_c*(1-t);
 				fprintf(stderr,"N: %i T:%e\n",N,T);
 				randomizeLattice(latt);
-				getTau(latt, T, ITER);
-				tau = getTau(latt, T, ITER);
-				t = (T_c-T)/T_c;
+				getTau(latt, T, 2e6);
+				tau = getTau(latt, T, 20e6);
 				printf("%e\t%e\t%i\n", tau/t, 1/(N*t), N); 
 			}   
 			printf("\n");
