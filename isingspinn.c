@@ -159,9 +159,10 @@ int main(int argc, char** args) {
 		}
 		break;
 	case 'c':
-		for (N = 2; N < 10; N+=1) {
+		for (N = 2; N < 10; N++1) {
 			initLattice(latt,N);
-			for (T = 0.1; T < 1; T +=0.1) {
+			printf("#N = %i\n",N);
+			for (T = 0.01; T < 0.16; T +=0.01) {
 				fprintf(stderr,"N: %i T:%e\n",N,T);
 				randomizeLattice(latt);
 				getTau(latt, T, ITER);
@@ -169,6 +170,7 @@ int main(int argc, char** args) {
 				t = (T_c-T)/T_c;
 				printf("%e\t%e\t%i\n", tau/t, 1/(N*t), N); 
 			}   
+			printf("\n");
 		}   
 	}
 	return EXIT_SUCCESS;
