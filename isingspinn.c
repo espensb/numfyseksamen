@@ -159,10 +159,10 @@ int main(int argc, char** args) {
 		}
 		break;
 	case 'c':
-		for (N = 2; N < 10; N++1) {
+		for (N = 2; N < 10; N++) {
 			initLattice(latt,N);
 			printf("#N = %i\n",N);
-			for (T = 0.01; T < 0.16; T +=0.01) {
+			for (T = 0.01; T < 0.16; T +=0.02) {
 				fprintf(stderr,"N: %i T:%e\n",N,T);
 				randomizeLattice(latt);
 				getTau(latt, T, ITER);
