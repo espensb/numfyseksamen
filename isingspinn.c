@@ -57,12 +57,12 @@ ullong rndu;
 ullong rndw = 1;
 
 
-unsigned int rnd() {
+ullong rnd() {
 	rndu = rndu*2862933555777941757LL + 7046029254386353087LL;
 	rndv ^= rndv >> 17; rndv ^= rndv << 31; rndv ^= rndv >> 8;
 	rndw = 4294957665U*(rndw & 0xffffffff) + (rndw >> 32);
 	ullong x = rndu ^ (rndu << 21);  x ^=  x >> 35; x ^= x << 4;
-	return abs((unsigned int) (x+rndv) ^ rndv);
+	return (x+rndv) ^ rndv;
 }
 void seedrnd(ullong j) {
 	rndu = j^rndv; rnd();
